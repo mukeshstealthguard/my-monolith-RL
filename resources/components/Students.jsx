@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import axios from "axios";
 
 function Students() {
     const [students, setStudents] = useState([]);
-    const [formData, setFormData] = useState({ name: "", email: "" });
     const [editingId, setEditingId] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        setValue,
+    } = useForm({
+        defaultValues: { name: "", email: "" },
+    });
 
     useEffect(() => {
         fetchStudents();
@@ -26,16 +35,15 @@ function Students() {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const onSubmit = async (data) => {
         try {
             setLoading(true);
             if (editingId) {
-                await axios.put(`/api/students/${editingId}`, formData);
+                await axios.put(`/api/students/${editingId}`, data);
             } else {
-                await axios.post("/api/students", formData);
+                await axios.post("/api/students", data);
             }
-            setFormData({ name: "", email: "" });
+            reset();
             setEditingId(null);
             fetchStudents();
             setError("");
@@ -48,7 +56,8 @@ function Students() {
     };
 
     const handleEdit = (student) => {
-        setFormData({ name: student.name, email: student.email });
+        setValue("name", student.name);
+        setValue("email", student.email);
         setEditingId(student.id);
     };
 
@@ -69,7 +78,7 @@ function Students() {
     };
 
     const handleCancel = () => {
-        setFormData({ name: "", email: "" });
+        reset();
         setEditingId(null);
     };
 
@@ -88,23 +97,28 @@ function Students() {
                 <h2 className="text-xl font-semibold mb-4">
                     {editingId ? "Edit Student" : "Add New Student"}
                 </h2>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
                             Name
                         </label>
                         <input
                             type="text"
-                            value={formData.name}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    name: e.target.value,
-                                })
-                            }
+                            {...register("name", {
+                                required: "Name is required",
+                                minLength: {
+                                    value: 2,
+                                    message:
+                                        "Name must be at least 2 characters",
+                                },
+                            })}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required
                         />
+                        {errors.name && (
+                            <p className="text-red-500 text-xs italic mt-1">
+                                {errors.name.message}
+                            </p>
+                        )}
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2">
@@ -112,16 +126,20 @@ function Students() {
                         </label>
                         <input
                             type="email"
-                            value={formData.email}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    email: e.target.value,
-                                })
-                            }
+                            {...register("email", {
+                                required: "Email is required",
+                                pattern: {
+                                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                    message: "Invalid email address",
+                                },
+                            })}
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            required
                         />
+                        {errors.email && (
+                            <p className="text-red-500 text-xs italic mt-1">
+                                {errors.email.message}
+                            </p>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         <button

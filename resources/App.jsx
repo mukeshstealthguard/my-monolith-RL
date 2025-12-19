@@ -1,8 +1,10 @@
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import Home from "./components/Home";
-import About from "./components/About";
-import Contact from "./components/Contact";
-import Students from "./components/Students";
+import { lazy, Suspense } from "react";
+
+const Home = lazy(() => import("./components/Home"));
+const About = lazy(() => import("./components/About"));
+const Contact = lazy(() => import("./components/Contact"));
+const Students = lazy(() => import("./components/Students"));
 
 function App() {
     return (
@@ -13,12 +15,14 @@ function App() {
                 <Link to="/contact">Contact</Link>
                 <Link to="/students">Students</Link>
             </nav>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/students" element={<Students />} />
-            </Routes>
+            <Suspense fallback={<div>Loading...</div>}>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/students" element={<Students />} />
+                </Routes>
+            </Suspense>
         </BrowserRouter>
     );
 }
