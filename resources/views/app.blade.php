@@ -5,7 +5,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   @viteReactRefresh
    @vite('resources/css/app.css')
-  @vite('resources/js/app.jsx')
+  @vite('resources/js/main.jsx')
 </head>
 <body>
   <div id="app"></div>
